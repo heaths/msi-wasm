@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'fileinfo'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=fileinfo",
+                    "--package=msi-wasm"
+                ],
+                "filter": {
+                    "name": "fileinfo",
+                    "kind": "example"
+                }
+            },
+            "args": [
+                // Change the location, or copy an MSI to this location.
+                "./sample.msi"
+            ],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
