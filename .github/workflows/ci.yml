@@ -40,6 +40,8 @@ jobs:
       run: cargo test --all
     - name: Lint
       run: cargo clippy --no-deps
+    - name: Install tools
+      run: cargo install wasm-pack
     - name: Pack
       run: npm run build
     - name: Upload artifact
