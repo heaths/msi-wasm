@@ -1,0 +1,3 @@
+[submodule "vendor/msi"]
+	path = vendor/msi
+	url = https://github.com/heaths/rust-msi.git

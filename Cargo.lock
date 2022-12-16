@@ -122,8 +122,6 @@ dependencies = [
 [[package]]
 name = "msi"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9121a6741e9cd1db15795b0615862eb945fc24b15bafce2ce7084eb27c91ac90"
 dependencies = [
  "byteorder",
  "cfb",
