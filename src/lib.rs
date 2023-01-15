@@ -4,56 +4,58 @@
 use msi::{Package, Select};
 use std::error::Error;
 use std::fmt::Display;
-use std::io::{Cursor, Read, Seek};
+use std::fs::File;
+use std::io::{BufReader, Cursor, Read, Seek};
 use std::ops::Index;
+use std::path::PathBuf;
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
+// #[wasm_bindgen]
+// extern "C" {
+//     #[wasm_bindgen(js_namespace = console)]
+//     fn log(s: &str);
+// }
 
-#[cfg(target_family = "wasm")]
-macro_rules! console_log {
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
+// #[cfg(target_family = "wasm")]
+// macro_rules! console_log {
+//     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+// }
 
-#[cfg(not(target_family = "wasm"))]
+// #[cfg(not(target_family = "wasm"))]
 macro_rules! console_log {
     ($($t:tt)*) => (eprintln!($($t)*))
 }
 
 #[derive(Debug, Default)]
-#[wasm_bindgen]
+// #[wasm_bindgen]
 pub struct ProductInfo {
     name: String,
     version: String,
 }
 
-#[wasm_bindgen]
+// #[wasm_bindgen]
 impl ProductInfo {
     // Use explicit getters since public fields cannot be of type String.
-    #[wasm_bindgen(getter)]
+    // #[wasm_bindgen(getter)]
     pub fn name(&self) -> String {
         self.name.clone()
     }
 
-    #[wasm_bindgen(getter)]
+    // #[wasm_bindgen(getter)]
     pub fn version(&self) -> String {
         self.version.clone()
     }
 }
 
-#[wasm_bindgen(js_name = "getProductInfo")]
-pub fn get_product_info(data: &[u8]) -> Result<ProductInfo, JsValue> {
-    let cursor = Cursor::new(data);
+// #[wasm_bindgen(js_name = "getProductInfo")]
+// pub fn get_product_info(data: &[u8]) -> Result<ProductInfo, JsValue> {
+//     let cursor = Cursor::new(data);
 
-    console_log!("opening package from {} bytes", data.len());
-    let info = read_product_info(cursor).unwrap_throw();
+//     console_log!("opening package from {} bytes", data.len());
+//     let info = read_product_info(cursor).unwrap_throw();
 
-    Ok(info)
-}
+//     Ok(info)
+// }
 
 pub fn read_product_info<R>(data: R) -> Result<ProductInfo, Box<dyn Error + Send + Sync>>
 where

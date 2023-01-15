@@ -3,6 +3,9 @@ name = "msi-wasm"
 version = "0.1.0"
 edition = "2021"
 authors = ["Heath Stewart (https://github.com/heaths)"]
+description = """
+Display information from a Windows Installer package (MSI) on any platform.
+"""
 license = "MIT"
 
 [lib]
@@ -15,3 +18,6 @@ web-sys = "0.3.60"
 [dependencies.msi]
 version = "0.5.0"
 path = "vendor/msi"
+
+[dev-dependencies]
+clap = { version = "4.1.0", default-features = false, features = ["std", "derive", "cargo", "usage", "help"] }
