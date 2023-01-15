@@ -1,3 +1,4 @@
 [toolchain]
 components = ["cargo", "clippy", "rustfmt"]
+profile = "minimal"
 targets = ["wasm32-unknown-unknown"]

@@ -3,7 +3,11 @@ name = "msi-wasm"
 version = "0.1.0"
 edition = "2021"
 authors = ["Heath Stewart (https://github.com/heaths)"]
+repository = "https://github.com/heaths/msi-wasm"
 license = "MIT"
+description = """
+Open and get information from Windows Installer packages (MSIs).
+"""
 
 [lib]
 crate-type = ["cdylib", "lib"]

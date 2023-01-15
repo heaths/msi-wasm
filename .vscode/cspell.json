@@ -1,0 +1,19 @@
+{
+    "words": [
+        "fileinfo",
+        "prestart"
+    ],
+    "dictionaries": [
+        "rust"
+    ],
+    "dictionaryDefinitions": [
+        {
+            "name": "rust",
+            "path": "rust-words.txt"
+        }
+    ],
+    "ignorePaths": [
+        "Cargo.lock",
+        "package-lock.json"
+    ]
+}
