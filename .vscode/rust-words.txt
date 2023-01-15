@@ -1,0 +1,5 @@
+bindgen
+cdylib
+clippy
+rustfmt
+rustup
