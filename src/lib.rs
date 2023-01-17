@@ -33,8 +33,8 @@ pub struct Package {
 #[wasm_bindgen]
 impl Package {
     #[wasm_bindgen(constructor)]
-    pub fn new(data: js_sys::Uint8Array) -> Result<Package, JsValue> {
-        let cursor = Cursor::new(data.to_vec());
+    pub fn new(data: Vec<u8>) -> Result<Package, JsValue> {
+        let cursor = Cursor::new(data);
         let p = msi::Package::open(cursor).unwrap_throw();
         Ok(Package { package: p })
     }
@@ -161,10 +161,9 @@ impl ProductInfo {
 }
 
 #[wasm_bindgen(js_name = "getProductInfo")]
-pub fn get_product_info(data: &[u8]) -> Result<ProductInfo, JsValue> {
-    let cursor = Cursor::new(data);
-
+pub fn get_product_info(data: Vec<u8>) -> Result<ProductInfo, JsValue> {
     console_log!("opening package from {} bytes", data.len());
+    let cursor = Cursor::new(data);
     let info = read_product_info(cursor).unwrap_throw();
 
     Ok(info)
