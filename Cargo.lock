@@ -133,6 +133,7 @@ dependencies = [
 name = "msi-wasm"
 version = "0.1.0"
 dependencies = [
+ "js-sys",
  "msi",
  "wasm-bindgen",
  "web-sys",

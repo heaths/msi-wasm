@@ -1,7 +1,8 @@
 // Copyright 2022 Heath Stewart.
 // Licensed under the MIT License. See LICENSE.txt in the project root for license information.
 
-use msi::{Package, Select};
+use js_sys::Array;
+use msi::Select;
 use std::error::Error;
 use std::fmt::Display;
 use std::io::{Cursor, Read, Seek};
@@ -22,6 +23,123 @@ macro_rules! console_log {
 #[cfg(not(target_family = "wasm"))]
 macro_rules! console_log {
     ($($t:tt)*) => (eprintln!($($t)*))
+}
+
+#[wasm_bindgen]
+pub struct Package {
+    package: msi::Package<Cursor<Vec<u8>>>,
+}
+
+#[wasm_bindgen]
+impl Package {
+    #[wasm_bindgen(constructor)]
+    pub fn new(data: js_sys::Uint8Array) -> Result<Package, JsValue> {
+        let cursor = Cursor::new(data.to_vec());
+        let p = msi::Package::open(cursor).unwrap_throw();
+        Ok(Package { package: p })
+    }
+
+    #[wasm_bindgen]
+    pub fn tables(&self) -> JsValue {
+        JsValue::from(
+            self.package
+                .tables()
+                .into_iter()
+                .map(|t| <Table as Into<JsValue>>::into(Table::new(t)))
+                .collect::<Array>(),
+        )
+    }
+}
+
+#[wasm_bindgen]
+pub struct Table {
+    name: String,
+    columns: Vec<Column>,
+}
+
+#[wasm_bindgen]
+impl Table {
+    fn new(table: &msi::Table) -> Self {
+        Table {
+            name: table.name().into(),
+            columns: table
+                .columns()
+                .into_iter()
+                .map(|c| Column::new(c))
+                .collect(),
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    #[wasm_bindgen]
+    pub fn columns(&self) -> JsValue {
+        JsValue::from(
+            self.columns
+                .as_slice()
+                .into_iter()
+                .map(|c| <Column as Into<JsValue>>::into(c.clone()))
+                .collect::<Array>(),
+        )
+    }
+}
+
+#[derive(Clone)]
+#[wasm_bindgen]
+pub struct Column {
+    name: String,
+    column_type: String,
+    category: Option<String>,
+    primary_key: bool,
+    nullable: bool,
+    localizable: bool,
+}
+
+#[wasm_bindgen]
+impl Column {
+    fn new(column: &msi::Column) -> Self {
+        Column {
+            name: column.name().into(),
+            column_type: format!("{}", column.coltype()),
+            category: column.category().map(|c| format!("{}", c)),
+            primary_key: column.is_primary_key(),
+            nullable: column.is_nullable(),
+            localizable: column.is_localizable(),
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    #[wasm_bindgen(getter, js_name = "columnType")]
+    pub fn column_type(&self) -> String {
+        self.column_type.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn category(&self) -> Option<String> {
+        self.category.clone()
+    }
+
+    #[wasm_bindgen(getter, js_name = "primaryKey")]
+    pub fn primary_key(&self) -> bool {
+        self.primary_key
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn nullable(&self) -> bool {
+        self.nullable
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn localizable(&self) -> bool {
+        self.localizable
+    }
 }
 
 #[derive(Debug, Default)]
@@ -59,7 +177,7 @@ pub fn read_product_info<R>(data: R) -> Result<ProductInfo, Box<dyn Error + Send
 where
     R: Read + Seek,
 {
-    let mut package = Package::open(data)?;
+    let mut package = msi::Package::open(data)?;
     if !package.has_table("Property") {
         return Err(Box::new(MsiError::TableNotFound("Property".to_owned())));
     }
