@@ -62,11 +62,7 @@ impl Table {
     fn new(table: &msi::Table) -> Self {
         Table {
             name: table.name().into(),
-            columns: table
-                .columns()
-                .into_iter()
-                .map(|c| Column::new(c))
-                .collect(),
+            columns: table.columns().iter().map(Column::new).collect(),
         }
     }
 
@@ -80,7 +76,7 @@ impl Table {
         JsValue::from(
             self.columns
                 .as_slice()
-                .into_iter()
+                .iter()
                 .map(|c| <Column as Into<JsValue>>::into(c.clone()))
                 .collect::<Array>(),
         )
@@ -103,6 +99,7 @@ impl Column {
     fn new(column: &msi::Column) -> Self {
         Column {
             name: column.name().into(),
+            // cspell:ignore coltype
             column_type: format!("{}", column.coltype()),
             category: column.category().map(|c| format!("{}", c)),
             primary_key: column.is_primary_key(),

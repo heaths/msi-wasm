@@ -38,7 +38,7 @@ packageFile.onchange = () => {
                 names += `<li>${_table.name} (${_columns.join(", ")})</li>`
             }
             names += "</ul>";
-            tables.innerHTML = names;
+            tables.innerHTML = "<p><b>Tables</b></p>" + names;
             tables.style = "display: block";
         }
     }
