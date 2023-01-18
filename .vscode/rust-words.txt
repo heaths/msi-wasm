@@ -3,3 +3,4 @@ cdylib
 clippy
 rustfmt
 rustup
+serde

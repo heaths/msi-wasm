@@ -3,6 +3,7 @@
 
 use js_sys::Array;
 use msi::Select;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Display;
 use std::io::{Cursor, Read, Seek};
@@ -33,9 +34,9 @@ pub struct Package {
 #[wasm_bindgen]
 impl Package {
     #[wasm_bindgen(constructor)]
-    pub fn new(data: Vec<u8>) -> Result<Package, JsValue> {
+    pub fn new(data: Vec<u8>) -> Result<Package, JsError> {
         let cursor = Cursor::new(data);
-        let p = msi::Package::open(cursor).unwrap_throw();
+        let p = msi::Package::open(cursor)?;
         Ok(Package { package: p })
     }
 
@@ -48,6 +49,30 @@ impl Package {
                 .map(|t| <Table as Into<JsValue>>::into(Table::new(t)))
                 .collect::<Array>(),
         )
+    }
+
+    #[wasm_bindgen]
+    pub fn rows(&mut self, table: &str) -> Result<JsValue, JsError> {
+        if !self.package.has_table(table) {
+            return Err(JsError::new(format!("table {} not found", table).as_str()));
+        }
+
+        Ok(JsValue::from(
+            self.package
+                .select_rows(Select::table(table))?
+                .into_iter()
+                .map(|r| {
+                    let mut obj = HashMap::with_capacity(r.len());
+                    for i in 0..r.len() {
+                        obj.insert(
+                            r.columns()[i].name().to_string(),
+                            r.index(i).as_str().map(|s| s.to_string()),
+                        );
+                    }
+                    serde_wasm_bindgen::to_value(&obj).unwrap_or_default()
+                })
+                .collect::<Array>(),
+        ))
     }
 }
 
@@ -161,7 +186,7 @@ impl ProductInfo {
 }
 
 #[wasm_bindgen(js_name = "getProductInfo")]
-pub fn get_product_info(data: Vec<u8>) -> Result<ProductInfo, JsValue> {
+pub fn get_product_info(data: Vec<u8>) -> Result<ProductInfo, JsError> {
     console_log!("opening package from {} bytes", data.len());
     let cursor = Cursor::new(data);
     let info = read_product_info(cursor).unwrap_throw();

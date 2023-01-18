@@ -6,6 +6,7 @@ import { getProductInfo, Package } from './pkg';
 const packageFile = document.getElementById('package');
 const info = document.getElementById('info');
 const tables = document.getElementById('tables');
+const rows = document.getElementById('properties');
 
 packageFile.onchange = () => {
     const reader = new FileReader();
@@ -40,6 +41,16 @@ packageFile.onchange = () => {
             names += "</ul>";
             tables.innerHTML = "<p><b>Tables</b></p>" + names;
             tables.style = "display: block";
+
+            const _props = pkg.rows("Property").sort((a, b) => a.get('Property') > b.get('Property') ? 1 : -1);
+            let _properties = "<table><tr><th>Property</th><th>Value</th></tr>";
+            for (let i in _props) {
+                const prop = _props[i];
+                _properties += `<tr><td>${prop.get('Property')}</td><td>${prop.get('Value')}</td></tr>`;
+            }
+            _properties += "</table>";
+            rows.innerHTML = "<p><b>Properties</b></p>" + _properties;
+            rows.style = "display: block";
         }
     }
 }
