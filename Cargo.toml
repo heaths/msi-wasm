@@ -13,7 +13,7 @@ Open and get information from Windows Installer packages (MSIs).
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-js-sys = "0.3.60"
+serde = "1.0.152"
 serde-wasm-bindgen = "0.4.5"
 wasm-bindgen = "0.2.83"
 web-sys = "0.3.60"

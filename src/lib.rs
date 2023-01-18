@@ -1,8 +1,8 @@
 // Copyright 2022 Heath Stewart.
 // Licensed under the MIT License. See LICENSE.txt in the project root for license information.
 
-use js_sys::Array;
 use msi::Select;
+use serde::Serialize;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Display;
@@ -41,38 +41,36 @@ impl Package {
     }
 
     #[wasm_bindgen]
-    pub fn tables(&self) -> JsValue {
-        JsValue::from(
-            self.package
-                .tables()
-                .into_iter()
-                .map(|t| <Table as Into<JsValue>>::into(Table::new(t)))
-                .collect::<Array>(),
-        )
+    pub fn tables(&self) -> Box<[JsValue]> {
+        self.package
+            .tables()
+            .into_iter()
+            .map(|t| <Table as Into<JsValue>>::into(Table::new(t)))
+            .collect()
     }
 
     #[wasm_bindgen]
-    pub fn rows(&mut self, table: &str) -> Result<JsValue, JsError> {
+    pub fn rows(&mut self, table: &str) -> Result<Box<[JsValue]>, JsError> {
         if !self.package.has_table(table) {
             return Err(JsError::new(format!("table {} not found", table).as_str()));
         }
 
-        Ok(JsValue::from(
-            self.package
-                .select_rows(Select::table(table))?
-                .into_iter()
-                .map(|r| {
-                    let mut obj = HashMap::with_capacity(r.len());
-                    for i in 0..r.len() {
-                        obj.insert(
-                            r.columns()[i].name().to_string(),
-                            r.index(i).as_str().map(|s| s.to_string()),
-                        );
-                    }
-                    serde_wasm_bindgen::to_value(&obj).unwrap_or_default()
-                })
-                .collect::<Array>(),
-        ))
+        Ok(self
+            .package
+            .select_rows(Select::table(table))?
+            .into_iter()
+            .map(|r| {
+                let mut obj = HashMap::with_capacity(r.len());
+                for i in 0..r.len() {
+                    obj.insert(
+                        r.columns()[i].name().to_string(),
+                        r.index(i).as_str().map(|s| s.to_string()),
+                    );
+                }
+                let serializer = serde_wasm_bindgen::Serializer::json_compatible();
+                obj.serialize(&serializer).unwrap_or_default()
+            })
+            .collect())
     }
 }
 
@@ -97,14 +95,12 @@ impl Table {
     }
 
     #[wasm_bindgen]
-    pub fn columns(&self) -> JsValue {
-        JsValue::from(
-            self.columns
-                .as_slice()
-                .iter()
-                .map(|c| <Column as Into<JsValue>>::into(c.clone()))
-                .collect::<Array>(),
-        )
+    pub fn columns(&self) -> Box<[JsValue]> {
+        self.columns
+            .as_slice()
+            .iter()
+            .map(|c| <Column as Into<JsValue>>::into(c.clone()))
+            .collect()
     }
 }
 
