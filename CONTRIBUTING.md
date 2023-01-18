@@ -11,6 +11,8 @@ You'll need to following software to build and run this project:
   to install dependencies.
 * [Rust](https://www.rust-lang.org). After installation, run `rustup show` to
   to install necessary components and targets.
+* [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/). Alternatively,
+  run `cargo install wasm-pack` to build and install it yourself.
 
 ## Building
 
