@@ -10,7 +10,7 @@ Open and get information from Windows Installer packages (MSIs).
 """
 
 [lib]
-crate-type = ["cdylib", "lib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 serde = "1.0.152"
