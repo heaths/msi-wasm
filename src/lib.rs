@@ -4,9 +4,7 @@
 use msi::Select;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt::Display;
-use std::io::{Cursor, Read, Seek};
+use std::io::Cursor;
 use std::ops::Index;
 use wasm_bindgen::prelude::*;
 
@@ -36,8 +34,35 @@ impl Package {
     #[wasm_bindgen(constructor)]
     pub fn new(data: Vec<u8>) -> Result<Package, JsError> {
         let cursor = Cursor::new(data);
-        let p = msi::Package::open(cursor)?;
-        Ok(Package { package: p })
+        let package = msi::Package::open(cursor)?;
+        Ok(Package { package })
+    }
+
+    #[wasm_bindgen(js_name = "productInfo")]
+    pub fn product_info(&mut self) -> Option<ProductInfo> {
+        if !self.package.has_table("Property") {
+            return None;
+        }
+
+        let columns = vec!["Property", "Value"];
+        let query = Select::table("Property").columns(&columns);
+        let rows = self.package.select_rows(query).ok()?;
+
+        let mut info = ProductInfo::default();
+        for row in rows {
+            let property = row.index(0).as_str()?;
+            let value = row.index(1).as_str()?;
+
+            match property {
+                "ProductName" => info.name = value.to_owned(),
+                "ProductVersion" => info.version = value.to_owned(),
+                "Manufacturer" => info.manufacturer = value.to_owned(),
+                "UpgradeCode" => info.upgrade_code = Some(value.to_owned()),
+                _ => console_log!("skipping property {}={}", property, value),
+            }
+        }
+
+        Some(info)
     }
 
     #[wasm_bindgen]
@@ -165,6 +190,8 @@ impl Column {
 pub struct ProductInfo {
     name: String,
     version: String,
+    manufacturer: String,
+    upgrade_code: Option<String>,
 }
 
 #[wasm_bindgen]
@@ -179,61 +206,14 @@ impl ProductInfo {
     pub fn version(&self) -> String {
         self.version.clone()
     }
-}
 
-#[wasm_bindgen(js_name = "getProductInfo")]
-pub fn get_product_info(data: Vec<u8>) -> Result<ProductInfo, JsError> {
-    console_log!("opening package from {} bytes", data.len());
-    let cursor = Cursor::new(data);
-    let info = read_product_info(cursor).unwrap_throw();
-
-    Ok(info)
-}
-
-pub fn read_product_info<R>(data: R) -> Result<ProductInfo, Box<dyn Error + Send + Sync>>
-where
-    R: Read + Seek,
-{
-    let mut package = msi::Package::open(data)?;
-    if !package.has_table("Property") {
-        return Err(Box::new(MsiError::TableNotFound("Property".to_owned())));
+    #[wasm_bindgen(getter)]
+    pub fn manufacturer(&self) -> String {
+        self.manufacturer.clone()
     }
 
-    console_log!("enumerating Property table");
-    let columns = vec!["Property", "Value"];
-    let query = Select::table("Property").columns(&columns);
-    let rows = package.select_rows(query)?;
-
-    let mut info = ProductInfo::default();
-    for row in rows {
-        let property = row.index(0).as_str().unwrap();
-        let value = row.index(1).as_str().unwrap();
-
-        match property {
-            "ProductName" => info.name = value.to_owned(),
-            "ProductVersion" => info.version = value.to_owned(),
-            _ => console_log!("skipping property {}={}", property, value),
-        }
-    }
-
-    Ok(info)
-}
-
-#[derive(Debug)]
-enum MsiError {
-    TableNotFound(String),
-}
-
-impl Display for MsiError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::TableNotFound(name) => write!(f, "table '{}' not found", name),
-        }
-    }
-}
-
-impl Error for MsiError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        None
+    #[wasm_bindgen(getter, js_name = "upgradeCode")]
+    pub fn upgrade_code(&self) -> Option<String> {
+        self.upgrade_code.clone()
     }
 }
