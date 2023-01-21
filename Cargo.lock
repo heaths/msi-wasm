@@ -122,6 +122,7 @@ dependencies = [
 [[package]]
 name = "msi"
 version = "0.5.0"
+source = "git+https://github.com/heaths/rust-msi?branch=issue13#286ad4220feb738fec301647409490b8d81f52b6"
 dependencies = [
  "byteorder",
  "cfb",
