@@ -18,6 +18,7 @@ module.exports = {
         })
     ],
     mode: 'development',
+    devtool: 'nosources-source-map',
     experiments: {
         asyncWebAssembly: true
     }
