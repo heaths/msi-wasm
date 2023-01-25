@@ -38,7 +38,7 @@ jobs:
     - name: Install tools
       run: cargo install wasm-pack
     - name: Pack
-      run: npm run build
+      run: npm run package
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:

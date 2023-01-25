@@ -1,8 +1,7 @@
 {
     "scripts": {
-        "prebuild": "wasm-pack build --target web --release",
-        "build": "webpack --mode=production",
-        "prestart": "wasm-pack build --target web --dev",
+        "compile": "webpack",
+        "package": "webpack --mode=production --no-devtool",
         "start": "webpack-dev-server"
     },
     "devDependencies": {
